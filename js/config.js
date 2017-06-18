@@ -1,7 +1,7 @@
 window.connectFour = window.connectFour || {};
 
 connectFour.CONFIG = {
-    numRows:4,
-    numColumns:4,
+    numRows:6,
+    numColumns:7,
     lineLength:4
 };
