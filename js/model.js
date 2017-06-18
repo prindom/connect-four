@@ -16,6 +16,14 @@ window.connectFour = window.connectFour || {};
             this.lastCol;
             this.lastRow;
             this.turn = "x";
+            this.winner = 1;
+            // EVENTS for the game
+            this.EVENTS = {
+                CHANGE:"change",
+                GAME_OVER:"gameover"
+            }
+
+            this.tokensInserted = 0;
         }
 
         // --------- public ---------
@@ -37,6 +45,8 @@ window.connectFour = window.connectFour || {};
         insertTokenAt(columnIndex) {
             columnIndex--;
             this.lastCol = columnIndex;
+            this.tokensInserted++;
+            this.checkGameStatus();
             for(let i = this.board[columnIndex].length; i >= 0; i--) {
                 if(this.board[columnIndex][i] == "-") {
                     if(this.turn == "x") {
@@ -48,6 +58,7 @@ window.connectFour = window.connectFour || {};
                         this.board[columnIndex][i] = "o";
                         this.turn = "x";
                     }
+                    $(this).trigger(this.EVENTS.CHANGE);
                     return;
                 }
             }
@@ -66,40 +77,63 @@ window.connectFour = window.connectFour || {};
         }
 
         checkGameStatus() {
+            if(this.tokensInserted === window.connectFour.CONFIG.numColumns * window.connectFour.CONFIG.numRows) {
+                this.winner = 0;
+                $(this).trigger(this.EVENTS.GAME_OVER);
+                return true;
+            }
             let player = this.turn;
-            // horizontalCheck
+            // the following 4 for
             for (let j = 0; j<window.connectFour.CONFIG.numRows-3 ; j++ ){
                 for (let i = 0; i<window.connectFour.CONFIG.numColumns; i++){
-                    if (this.board[i][j] == player && this.board[i][j+1] == player && this.board[i][j+2] == player && this.board[i][j+3] == player){
-                        let winner = player.toUpperCase();
-                        this.board[i][j] = "X";
-                        this.board[i][j+1] = winner;
-                        this.board[i][j+2] = winner;
-                        this.board[i][j+3] = winner;
+                    if (this.board[i][j] == player && this.board[i][j+1] == player && this.board[i][j+2] == player && this.board[i][j+3] == player && this.board[i][j] != "-"){
+                        this.board[i][j] = player.toUpperCase();
+                        this.board[i][j+1] = player.toUpperCase();
+                        this.board[i][j+2] = player.toUpperCase();
+                        this.board[i][j+3] = player.toUpperCase();
+                        this.winner = player;
+                        $(this).trigger(this.EVENTS.GAME_OVER);
                         return true;
                     }
                 }
             }
-            // verticalCheck
             for (let i = 0; i<window.connectFour.CONFIG.numColumns-3 ; i++ ){
                 for (let j = 0; j<window.connectFour.CONFIG.numRows; j++){
-                    if (this.board[i][j] == player && this.board[i+1][j] == player && this.board[i+2][j] == player && this.board[i+3][j] == player){
+                    if (this.board[i][j] == player && this.board[i+1][j] == player && this.board[i+2][j] == player && this.board[i+3][j] == player && this.board[i][j] != "-"){
+                        this.board[i][j] = player.toUpperCase();
+                        this.board[i+1][j] = player.toUpperCase();
+                        this.board[i+2][j] = player.toUpperCase();
+                        this.board[i+3][j] = player.toUpperCase();
+                        this.winner = player;
+                        $(this).trigger(this.EVENTS.GAME_OVER);
                         return true;
                     }
                 }
             }
-            // ascendingDiagonalCheck
             for (let i=3; i<window.connectFour.CONFIG.numColumns; i++){
                 for (let j=0; j<window.connectFour.CONFIG.numRows-3; j++){
-                    if (this.board[i][j] == player && this.board[i-1][j+1] == player && this.board[i-2][j+2] == player && this.board[i-3][j+3] == player)
+                    if (this.board[i][j] == player && this.board[i-1][j+1] == player && this.board[i-2][j+2] == player && this.board[i-3][j+3] == player && this.board[i][j] != "-") {
+                        this.board[i][j] = player.toUpperCase();
+                        this.board[i-1][j+1] = player.toUpperCase();
+                        this.board[i-2][j+2] = player.toUpperCase();
+                        this.board[i-3][j+3] = player.toUpperCase();
+                        this.winner = player;
+                        $(this).trigger(this.EVENTS.GAME_OVER);
                         return true;
+                    }
                 }
             }
-            // descendingDiagonalCheck
             for (let i=3; i<window.connectFour.CONFIG.numColumns; i++){
                 for (let j=3; j<window.connectFour.CONFIG.numRows; j++){
-                    if (this.board[i][j] == player && this.board[i-1][j-1] == player && this.board[i-2][j-2] == player && this.board[i-3][j-3] == player)
+                    if (this.board[i][j] == player && this.board[i-1][j-1] == player && this.board[i-2][j-2] == player && this.board[i-3][j-3] == player && this.board[i][j] != "-") {
+                        this.board[i][j] = player.toUpperCase();
+                        this.board[i-1][j-1] = player.toUpperCase();
+                        this.board[i-2][j-2] = player.toUpperCase();
+                        this.board[i-3][j-3] = player.toUpperCase();
+                        this.winner = player;
+                        $(this).trigger(this.EVENTS.GAME_OVER);
                         return true;
+                    }
                 }
             }
             return false;
@@ -107,9 +141,9 @@ window.connectFour = window.connectFour || {};
 
         toString() {
             this.$Output.html("x=Spieler 1, o=Spieler 2, Großbuchstaben=gewonnene Stene, Bindestriche: leere Felder <br/>");
-            for(let i = 0; i < this.board.length; i++) {
+            for(let i = 0; i < window.connectFour.CONFIG.numRows; i++) {
                 // inside one row
-                for(let j = 0; j < this.board[i].length; j++) {
+                for(let j = 0; j < window.connectFour.CONFIG.numColumns; j++) {
                     // inside one column
                     this.$Output.append(this.board[j][i]);
 
@@ -118,40 +152,24 @@ window.connectFour = window.connectFour || {};
             }
         }
 
+        restartGame() {
+            for(let i = 0; i < this.board.length; i++) {
+                // inside one row
+                for(let j = 0; j < this.board[i].length; j++) {
+                    // inside one column
+                    this.board[i][j] = "-";
+                }
+            }
+            this.turn = "x";
+            $(this).trigger(this.EVENTS.CHANGE);
+        }
+
 
         // --------- private ---------
 
-        checkLeft(col, row) {
-            if(col >= 3) {
-                if(this.board[col][row] === this.board[col-1][row]) {
-                    return true;
-                } else return false;
-            } else return false;
 
-        }
-
-        checkRight(col, row) {
-            if(col <= 2) {
-                if(this.board[col][row] === this.board[col+1][row]) {
-                    return true;
-                } else return false;
-            } else return false;
-        }
-
-        checkTop(col, row) {
-            if(this.board[col][row] === this.board[col][row-1]) {
-                return true;
-            } else return false;
-        }
-
-        checkBottom(col, row) {
-            if(this.board[col][row] === this.board[col][row+1]) {
-                return true;
-            } else return false;
-        }
     }
 
     namespace.Model = Model;
 
 })(window.connectFour, window);
-
